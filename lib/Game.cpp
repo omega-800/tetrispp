@@ -64,27 +64,47 @@ void State::spawnTetromino() {
 
 void State::clearRows() {
   int w = board.size() - 1;
+  int cleared = 0;
   for (int r = (int)board.size() - 1; r >= 0; r--) {
     bool full = true;
     for (auto cell : board[r])
       full = full && cell;
-    if (full)
+    if (full) {
+      cleared++;
       continue;
+    }
     board[w--] = board[r];
   }
   for (; w >= 0; w--)
     board[w].fill(false);
+  switch (cleared) {
+  case 1:
+    score += 100 * level;
+    break;
+  case 2:
+    score += 300 * level;
+    break;
+  case 3:
+    score += 500 * level;
+    break;
+  case 4:
+    score += 800 * level;
+    break;
+  }
 }
 
 void State::advance() {
   for (int c = 0; c < TETRIMINO_SIZE; c++) {
     int col = curTetromino.x + SHAPES[curTetromino.type][curTetromino.dir][c][0];
     int row = curTetromino.y + SHAPES[curTetromino.type][curTetromino.dir][c][1];
-    if (col >= 0 && col < board[0].size() && row >= 0 && row < board.size())
+    if (row < 0)
+      gameOver = true;
+    else if (col >= 0 && col < board[0].size() && row < (int)board.size())
       board[row][col] = true;
   }
   clearRows();
-  spawnTetromino();
+  if (!gameOver)
+    spawnTetromino();
 }
 
 auto keyAvailable() -> bool {
@@ -97,9 +117,8 @@ auto keyAvailable() -> bool {
 
 void doTheThing(State &state, std::ostream &out, std::istream &in) {
   RawTerminal raw;
-  bool running = true;
   auto lastFall = std::chrono::steady_clock::now();
-  while (running) {
+  while (!state.gameOver) {
     state.print(out);
     if (keyAvailable()) {
       char key;
@@ -124,7 +143,7 @@ void doTheThing(State &state, std::ostream &out, std::istream &in) {
         break;
 
       case 'q':
-        running = false;
+        state.gameOver = true;
         break;
       }
     }

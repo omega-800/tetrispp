@@ -10,6 +10,7 @@ class State {
   std::array<std::array<bool, 10>, 20> board{};
 
 public:
+  bool gameOver{false};
   State();
   void rotate();
   void move(Direction dir);
