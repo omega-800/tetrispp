@@ -3,6 +3,7 @@
 #include "Shapes.hpp"
 
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <sys/select.h>
@@ -14,7 +15,7 @@ void State::print(std::ostream &out) {
   clear(out);
   out << "Move: h, l         Advance: j" << "\n";
   out << "Rotate: k          Quit: q" << "\n";
-  out << "Score: " << score << "\n";
+  out << "Level: " << std::setw(2) << level() << "          Score: " << score << "\n";
   auto view = board;
   for (int c = 0; c < TETRIMINO_SIZE; c++) {
     int col = curTetromino.x + SHAPES[curTetromino.type][curTetromino.dir][c][0];
@@ -77,18 +78,19 @@ void State::clearRows() {
   }
   for (; w >= 0; w--)
     board[w].fill(false);
+  linesCleared += cleared;
   switch (cleared) {
   case 1:
-    score += 100 * level;
+    score += 100 * level();
     break;
   case 2:
-    score += 300 * level;
+    score += 300 * level();
     break;
   case 3:
-    score += 500 * level;
+    score += 500 * level();
     break;
   case 4:
-    score += 800 * level;
+    score += 800 * level();
     break;
   }
 }
@@ -150,14 +152,12 @@ void doTheThing(State &state, std::ostream &out, std::istream &in) {
 
     auto now = std::chrono::steady_clock::now();
 
-    // TODO: state.level * modifier
-    if (now - lastFall >= std::chrono::milliseconds(1000)) {
-      // TODO: move block
+    auto tick = std::chrono::milliseconds((int)(state.time() * 1000));
+    if (now - lastFall >= tick) {
       state.move(Direction::down);
       lastFall = now;
     }
 
-    // TODO: state.level * modifier
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
