@@ -20,7 +20,6 @@ private:
   void advance();
   void clearRows();
   void spawnTetromino();
-  void clearRows();
 };
 
 void initGame(std::ostream &out, std::istream &in);

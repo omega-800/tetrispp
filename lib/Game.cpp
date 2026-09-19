@@ -87,10 +87,6 @@ void State::advance() {
   spawnTetromino();
 }
 
-void State::clearRows() {
-
-}
-
 auto keyAvailable() -> bool {
   fd_set fds;
   FD_ZERO(&fds);
