@@ -1,34 +1,21 @@
 #ifndef GAME_HPP_
 #define GAME_HPP_
 
+#include "Shapes.hpp"
+#include <array>
 #include <iostream>
-#include <vector>
-
-enum Direction { left, right, up, down };
-
-class Tetromino {
-public:
-  int x{0}, y{0};
-  Direction dir;
-};
-
-class TetrominoI : public Tetromino {};
-class TetrominoO : public Tetromino {};
-class TetrominoT : public Tetromino {};
-class TetrominoS : public Tetromino {};
-class TetrominoZ : public Tetromino {};
-class TetrominoJ : public Tetromino {};
-class TetrominoL : public Tetromino {};
 
 class State {
-  int score{0};
-  bool board[20][10];
+  int score{0}, level{1};
+  std::array<std::array<bool, 10>, 20> board{};
 
 public:
   State();
+  void drop();
+  void rotate();
   void move(Direction dir);
-  void tick();
   void print(std::ostream &out);
+
 private:
   Tetromino curTetromino;
   void advance();

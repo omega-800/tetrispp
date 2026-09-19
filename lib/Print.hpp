@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#include "Game.hpp"
-
 auto getChar(std::istream &in) -> char;
 void clear(std::ostream &out);
 
