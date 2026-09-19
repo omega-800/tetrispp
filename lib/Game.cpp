@@ -8,7 +8,7 @@
 #include <sys/select.h>
 #include <thread>
 
-State::State() : board{} { advance(); }
+State::State() : board{} { spawnTetromino(); }
 
 void State::print(std::ostream &out) {
   clear(out);
@@ -16,10 +16,9 @@ void State::print(std::ostream &out) {
   out << "Rotate: k          Quit: q" << "\n";
   out << "Score: " << score << "\n";
   auto view = board;
-  auto rot = (curTetromino.dir + 3) % 4;
-  for (int c = 0; c < 4; c++) {
-    int col = curTetromino.x + SHAPES[curTetromino.type][rot][c][0];
-    int row = curTetromino.y + SHAPES[curTetromino.type][rot][c][1];
+  for (int c = 0; c < TETRIMINO_SIZE; c++) {
+    int col = curTetromino.x + SHAPES[curTetromino.type][curTetromino.dir][c][0];
+    int row = curTetromino.y + SHAPES[curTetromino.type][curTetromino.dir][c][1];
     if (col >= 0 && col < board[0].size() && row >= 0 && row < board.size())
       view[row][col] = true;
   }
@@ -30,37 +29,66 @@ void State::print(std::ostream &out) {
   }
 }
 
-void State::drop() {
-  if (curTetromino.y == board.size() - 1)
-    advance();
-  else
-    curTetromino.y++;
-}
-
 void State::rotate() {
   curTetromino.dir = (Direction)((curTetromino.dir + 1) % 4);
 }
 
 void State::move(Direction dir) {
-  if (dir != left && dir != right)
+  int dx = (dir == right) - (dir == left);
+  int dy = (dir == down) ? 1 : 0;
+  if (dx == 0 && dy == 0)
     return;
-  auto rot = (curTetromino.dir + 3) % 4;
-  int dx = (dir == right) ? 1 : -1;
-  for (int c = 0; c < 4; c++) {
-    int col = curTetromino.x + dx + SHAPES[curTetromino.type][rot][c][0];
-    if (col < 0 || col >= (int)board[0].size())
+  for (int c = 0; c < TETRIMINO_SIZE; c++) {
+    int col = curTetromino.x + dx + SHAPES[curTetromino.type][curTetromino.dir][c][0];
+    int row = curTetromino.y + dy + SHAPES[curTetromino.type][curTetromino.dir][c][1];
+    bool out = row >= (int)board.size() || col < 0 || col >= (int)board[0].size();
+    bool hit = !out && row >= 0 && board[row][col];
+    if (out || hit) {
+      if (dir == down)
+        advance();
       return;
+    }
   }
   curTetromino.x += dx;
+  curTetromino.y += dy;
 }
 
-void State::advance() {
+void State::spawnTetromino() {
   static std::mt19937 gen{std::random_device{}()};
   static std::uniform_int_distribution<int> dist{0, Type::count - 1};
   curTetromino.x = 4;
   curTetromino.y = 0;
   curTetromino.dir = up;
   curTetromino.type = (Type)dist(gen);
+}
+
+void State::clearRows() {
+  int w = board.size() - 1;
+  for (int r = (int)board.size() - 1; r >= 0; r--) {
+    bool full = true;
+    for (auto cell : board[r])
+      full = full && cell;
+    if (full)
+      continue;
+    board[w--] = board[r];
+  }
+  for (; w >= 0; w--)
+    board[w].fill(false);
+}
+
+void State::advance() {
+  for (int c = 0; c < TETRIMINO_SIZE; c++) {
+    int col = curTetromino.x + SHAPES[curTetromino.type][curTetromino.dir][c][0];
+    int row = curTetromino.y + SHAPES[curTetromino.type][curTetromino.dir][c][1];
+    if (col >= 0 && col < board[0].size() && row >= 0 && row < board.size())
+      board[row][col] = true;
+  }
+  clearRows();
+  spawnTetromino();
+}
+
+void State::clearRows() {
+
 }
 
 auto keyAvailable() -> bool {
@@ -92,7 +120,7 @@ void doTheThing(State &state, std::ostream &out, std::istream &in) {
         break;
 
       case 'j':
-        state.drop();
+        state.move(Direction::down);
         break;
 
       case 'k':
@@ -110,7 +138,7 @@ void doTheThing(State &state, std::ostream &out, std::istream &in) {
     // TODO: state.level * modifier
     if (now - lastFall >= std::chrono::milliseconds(1000)) {
       // TODO: move block
-      state.drop();
+      state.move(Direction::down);
       lastFall = now;
     }
 

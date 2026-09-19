@@ -3,7 +3,7 @@
 
 enum Type { i, o, t, s, z, j, l, count };
 
-enum Direction { left, up, right, down };
+enum Direction { up, right, down, left };
 
 class Tetromino {
 public:
@@ -12,8 +12,10 @@ public:
   Type type;
 };
 
+constexpr int TETRIMINO_SIZE = 4;
+
 // SHAPES[type][rotation][cell] = {dx, dy} offsets from the piece anchor
-static constexpr int SHAPES[Type::count][4][4][2] = {
+static constexpr int SHAPES[Type::count][TETRIMINO_SIZE][TETRIMINO_SIZE][2] = {
   {
     { { -2, 0 }, { -1, 0 }, { 0, 0 }, { 1, 0 } },
     { { 0, -2 }, { 0, -1 }, { 0, 0 }, { 0, 1 } },

@@ -11,7 +11,6 @@ class State {
 
 public:
   State();
-  void drop();
   void rotate();
   void move(Direction dir);
   void print(std::ostream &out);
@@ -19,6 +18,9 @@ public:
 private:
   Tetromino curTetromino;
   void advance();
+  void clearRows();
+  void spawnTetromino();
+  void clearRows();
 };
 
 void initGame(std::ostream &out, std::istream &in);
