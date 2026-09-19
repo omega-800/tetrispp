@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 
-project("CPl W01"
+project("TetrisPP"
     LANGUAGES CXX
 )
 
@@ -22,3 +22,5 @@ add_executable("tetrispp"
 target_link_libraries("tetrispp"
     "TetrisPP"
 )
+
+install(TARGETS tetrispp RUNTIME DESTINATION bin)
